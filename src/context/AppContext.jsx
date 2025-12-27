@@ -44,6 +44,11 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : {}
   })
 
+  const [personalNotes, setPersonalNotes] = useState(() => {
+    const saved = localStorage.getItem('personalNotes')
+    return saved ? JSON.parse(saved) : {}
+  })
+
   useEffect(() => {
     localStorage.setItem('userProgress', JSON.stringify(userProgress))
   }, [userProgress])
@@ -61,6 +66,10 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('savedCode', JSON.stringify(savedCode))
   }, [savedCode])
 
+  useEffect(() => {
+    localStorage.setItem('personalNotes', JSON.stringify(personalNotes))
+  }, [personalNotes])
+
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark')
   }
@@ -74,6 +83,17 @@ export const AppProvider = ({ children }) => {
 
   const getSavedCode = (track, day) => {
     return savedCode[`${track}-${day}`] || null
+  }
+
+  const savePersonalNote = (track, day, note) => {
+    setPersonalNotes(prev => ({
+      ...prev,
+      [`${track}-${day}`]: note
+    }))
+  }
+
+  const getPersonalNote = (track, day) => {
+    return personalNotes[`${track}-${day}`] || ''
   }
 
   const completeLesson = (track, day) => {
@@ -129,7 +149,9 @@ export const AppProvider = ({ children }) => {
     submitQuiz,
     updateSkillMastery,
     saveCodeForLesson,
-    getSavedCode
+    getSavedCode,
+    savePersonalNote,
+    getPersonalNote
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

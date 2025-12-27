@@ -3,33 +3,247 @@ export const pythonLessons = [
   // Week 1: Fundamentals (Days 1-7)
   { day: 1, title: "Python Syntax & Variables", difficulty: "Beginner", duration: "45 min", category: "fundamentals", 
     topics: ["Print statements", "Variables & data types", "Basic operators", "String formatting"],
-    starterCode: "# Welcome to Python!\nname = \"Developer\"\nprint(f\"Hello, {name}!\")\n\n# Your task: Create variables and perform operations",
+    starterCode: `# Welcome to Python!
+# Variables store data that you can use later
+name = "Developer"  # This is a string variable
+
+# f-strings allow you to insert variables into strings
+print(f"Hello, {name}!")
+
+# Try creating your own variables
+age = 25
+is_student = True
+height = 5.9
+
+# Print them out
+print(f"Age: {age}, Student: {is_student}, Height: {height}")`,
     breakCode: "name = Developer\nprint(f\"Hello, {name}!)\"",
-    commonErrors: ["NameError: name is not defined", "SyntaxError: EOL while scanning string literal"]
+    commonErrors: ["NameError: name is not defined", "SyntaxError: EOL while scanning string literal"],
+    notes: {
+      concept: "Python uses variables to store data. Unlike some languages, you don't need to declare the type - Python figures it out automatically!",
+      keyPoints: [
+        "Variables are created when you assign a value: name = 'Alice'",
+        "Use descriptive names: user_age is better than x",
+        "Python has main data types: str (text), int (whole numbers), float (decimals), bool (True/False)",
+        "f-strings (f'Hello {name}') are the modern way to format strings"
+      ],
+      tips: [
+        "💡 Variable names can't start with numbers: my_var1 ✓, 1my_var ✗",
+        "💡 Use snake_case for variables: user_name, not userName",
+        "💡 Strings can use single or double quotes: 'hello' or \"hello\""
+      ],
+      example: `# Different data types
+name = "Alice"        # String
+age = 25             # Integer  
+price = 19.99        # Float
+is_active = True     # Boolean
+
+# You can check the type
+print(type(name))    # <class 'str'>`
+    }
   },
   { day: 2, title: "Control Flow: If/Else", difficulty: "Beginner", duration: "50 min", category: "fundamentals",
     topics: ["Conditional statements", "Comparison operators", "Logical operators", "Nested conditions"],
-    starterCode: "age = 25\nif age >= 18:\n    print(\"Adult\")\nelse:\n    print(\"Minor\")",
+    starterCode: `# Control flow lets your program make decisions
+age = 25
+
+if age >= 18:
+    print("Adult")
+else:
+    print("Minor")
+
+# Try with different ages
+score = 85
+
+if score >= 90:
+    print("Grade: A")
+elif score >= 80:
+    print("Grade: B")
+elif score >= 70:
+    print("Grade: C")
+else:
+    print("Grade: F")`,
     breakCode: "if age >= 18\n    print(\"Adult\")\nelse\n    print(\"Minor\")",
-    commonErrors: ["SyntaxError: invalid syntax", "IndentationError: expected an indented block"]
+    commonErrors: ["SyntaxError: invalid syntax", "IndentationError: expected an indented block"],
+    notes: {
+      concept: "Control flow determines which code runs based on conditions. Think of it as your program asking questions and acting on the answers.",
+      keyPoints: [
+        "if statements check conditions and run code only if True",
+        "elif (else if) checks additional conditions",
+        "else catches everything that didn't match",
+        "Comparison operators: == (equal), != (not equal), <, >, <=, >="
+      ],
+      tips: [
+        "⚠️ Don't forget the colon (:) after conditions!",
+        "⚠️ Indentation matters! Use 4 spaces for each level",
+        "💡 Use 'and' and 'or' to combine conditions: if age >= 18 and has_license:"
+      ],
+      example: `# Multiple conditions
+age = 20
+has_id = True
+
+if age >= 21:
+    print("Can enter bar")
+elif age >= 18 and has_id:
+    print("Can enter restaurant")
+else:
+    print("Too young")`
+    }
   },
   { day: 3, title: "Loops: For & While", difficulty: "Beginner", duration: "55 min", category: "fundamentals",
     topics: ["For loops", "While loops", "Range function", "Break & continue"],
-    starterCode: "for i in range(5):\n    print(i)\n\ncount = 0\nwhile count < 3:\n    print(count)\n    count += 1",
+    starterCode: `# For loop - iterate over a sequence
+for i in range(5):  # range(5) creates 0,1,2,3,4
+    print(f"Count: {i}")
+
+# While loop - repeat while condition is true
+count = 0
+while count < 3:
+    print(f"While count: {count}")
+    count += 1  # Don't forget to increment!
+
+# Using break and continue
+for num in range(10):
+    if num == 5:
+        break  # Exit loop
+    if num % 2 == 0:
+        continue  # Skip to next iteration
+    print(num)`,
     breakCode: "for i in range(5)\n    print(i)",
-    commonErrors: ["SyntaxError: invalid syntax", "IndentationError", "Infinite loop"]
+    commonErrors: ["SyntaxError: invalid syntax", "IndentationError", "Infinite loop"],
+    notes: {
+      concept: "Loops allow you to repeat code multiple times. For loops iterate over sequences, while loops repeat until a condition is false.",
+      keyPoints: [
+        "for loops are best for iterating a known number of times",
+        "while loops are best when you don't know how many iterations you need",
+        "range(n) creates numbers from 0 to n-1",
+        "break exits the loop entirely, continue skips to the next iteration",
+        "Always make sure while loops have a way to end (avoid infinite loops)"
+      ],
+      tips: [
+        "Use for loops when working with lists, strings, or range of numbers",
+        "Always increment your counter in while loops",
+        "Test loops with small numbers first to avoid infinite loops",
+        "Remember: range(5) gives you 0,1,2,3,4 (not 1,2,3,4,5)"
+      ],
+      example: `# Loop through a list
+fruits = ["apple", "banana", "cherry"]
+for fruit in fruits:
+    print(fruit)
+
+# Countdown with while loop
+countdown = 5
+while countdown > 0:
+    print(countdown)
+    countdown -= 1
+print("Blast off!")`
+    }
   },
   { day: 4, title: "Lists & List Operations", difficulty: "Beginner", duration: "60 min", category: "fundamentals",
     topics: ["Creating lists", "Indexing & slicing", "List methods", "List comprehensions"],
-    starterCode: "numbers = [1, 2, 3, 4, 5]\nprint(numbers[0])\nnumbers.append(6)\nsquared = [x**2 for x in numbers]",
+    starterCode: `# Creating and accessing lists
+numbers = [1, 2, 3, 4, 5]
+print(numbers[0])  # First item (index 0)
+print(numbers[-1])  # Last item
+
+# List methods
+numbers.append(6)  # Add to end
+numbers.insert(0, 0)  # Insert at position
+numbers.remove(3)  # Remove specific value
+
+# Slicing [start:end]
+print(numbers[1:4])  # Get items 1,2,3
+
+# List comprehension - create lists quickly
+squared = [x**2 for x in range(5)]
+print(squared)`,
     breakCode: "numbers = [1, 2, 3, 4, 5]\nprint(numbers[5])",
-    commonErrors: ["IndexError: list index out of range", "TypeError: list indices must be integers"]
+    commonErrors: ["IndexError: list index out of range", "TypeError: list indices must be integers"],
+    notes: {
+      concept: "Lists are ordered, mutable collections that can hold any type of data. They're one of Python's most versatile data structures.",
+      keyPoints: [
+        "Lists use zero-based indexing (first item is index 0)",
+        "Negative indices count from the end (-1 is last item)",
+        "Slicing creates a new list with specified elements",
+        "Lists are mutable - you can change, add, or remove items",
+        "List comprehensions provide a concise way to create lists"
+      ],
+      tips: [
+        "Remember: if list has 5 items, valid indices are 0-4",
+        "Use .append() to add one item, .extend() to add multiple",
+        "Slicing syntax: [start:end] - end is not included",
+        "Check list length with len() before accessing by index"
+      ],
+      example: `# Common list operations
+fruits = ["apple", "banana", "cherry"]
+
+# Adding items
+fruits.append("date")
+fruits.extend(["elderberry", "fig"])
+
+# Removing items
+fruits.pop()  # Remove last
+fruits.remove("banana")  # Remove by value
+
+# Sorting
+numbers = [3, 1, 4, 1, 5]
+numbers.sort()  # In-place sort
+sorted_nums = sorted(numbers)  # Returns new list`
+    }
   },
   { day: 5, title: "Dictionaries & Sets", difficulty: "Beginner", duration: "60 min", category: "fundamentals",
     topics: ["Dictionary creation", "Accessing values", "Dictionary methods", "Sets & set operations"],
-    starterCode: "person = {\"name\": \"Alice\", \"age\": 30}\nprint(person[\"name\"])\nperson[\"city\"] = \"NYC\"",
+    starterCode: `# Dictionaries - key:value pairs
+person = {"name": "Alice", "age": 30, "city": "NYC"}
+print(person["name"])  # Access by key
+
+# Adding/modifying values
+person["email"] = "alice@email.com"
+person["age"] = 31  # Update existing key
+
+# Dictionary methods
+print(person.keys())  # All keys
+print(person.values())  # All values
+print(person.get("phone", "Not found"))  # Safe access with default
+
+# Sets - unique unordered collections
+colors = {"red", "green", "blue"}
+colors.add("yellow")
+print("red" in colors)  # Check membership`,
     breakCode: "person = {\"name\": \"Alice\", \"age\": 30}\nprint(person[\"email\"])",
-    commonErrors: ["KeyError: 'email'", "TypeError: unhashable type"]
+    commonErrors: ["KeyError: 'email'", "TypeError: unhashable type"],
+    notes: {
+      concept: "Dictionaries store key-value pairs for fast lookups. Sets store unique values with fast membership testing.",
+      keyPoints: [
+        "Dictionary keys must be unique and immutable (strings, numbers, tuples)",
+        "Use .get() to avoid KeyError when key might not exist",
+        "Sets automatically remove duplicates",
+        "Sets are unordered - no indexing",
+        "Both dictionaries and sets use {} braces"
+      ],
+      tips: [
+        "Use .get(key, default) instead of [key] to avoid errors",
+        "Check if key exists with: if 'key' in dict",
+        "Use sets for membership testing - it's much faster than lists",
+        "Dictionary keys can't be lists (mutable), but can be tuples (immutable)"
+      ],
+      example: `# Dictionary use case
+student = {
+    "name": "John",
+    "grades": [85, 90, 88],
+    "graduated": False
+}
+
+# Iterate through dictionary
+for key, value in student.items():
+    print(f"{key}: {value}")
+
+# Set operations
+set1 = {1, 2, 3, 4}
+set2 = {3, 4, 5, 6}
+print(set1.union(set2))  # All unique items
+print(set1.intersection(set2))  # Common items`
+    }
   },
   { day: 6, title: "Functions & Parameters", difficulty: "Beginner", duration: "65 min", category: "fundamentals",
     topics: ["Defining functions", "Parameters & arguments", "Return values", "Default parameters"],

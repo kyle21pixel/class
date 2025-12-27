@@ -5,13 +5,13 @@ import { getPythonLessonByDay } from '../data/pythonLessons'
 import { getJavaScriptLessonByDay } from '../data/javascriptLessons'
 import { getReactLessonByDay } from '../data/reactLessons'
 import CodeEditor from '../components/CodeEditor'
-import { CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Lightbulb, Bug, Eye, EyeOff, Play } from 'lucide-react'
+import { CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Lightbulb, Bug, Eye, EyeOff, Play, BookOpen, FileText } from 'lucide-react'
 import './LessonWorkspace.css'
 
 const LessonWorkspace = ({ track }) => {
   const { day } = useParams()
   const navigate = useNavigate()
-  const { completeLesson, saveCodeForLesson, getSavedCode } = useApp()
+  const { completeLesson, saveCodeForLesson, getSavedCode, savePersonalNote, getPersonalNote } = useApp()
   
   const [lesson, setLesson] = useState(null)
   const [code, setCode] = useState('')
@@ -20,6 +20,8 @@ const LessonWorkspace = ({ track }) => {
   const [showHints, setShowHints] = useState(false)
   const [showSolution, setShowSolution] = useState(false)
   const [isRunning, setIsRunning] = useState(false)
+  const [activeNotesTab, setActiveNotesTab] = useState('lesson') // 'lesson' or 'personal'
+  const [personalNote, setPersonalNote] = useState('')
 
   useEffect(() => {
     let lessonData
@@ -41,8 +43,10 @@ const LessonWorkspace = ({ track }) => {
       setLesson(lessonData)
       const savedCode = getSavedCode(track, day)
       setCode(savedCode || lessonData.starterCode || '')
+      const savedNote = getPersonalNote(track, day)
+      setPersonalNote(savedNote || '')
     }
-  }, [track, day, getSavedCode])
+  }, [track, day, getSavedCode, getPersonalNote])
 
   useEffect(() => {
     if (lesson && code) {
@@ -52,6 +56,15 @@ const LessonWorkspace = ({ track }) => {
       return () => clearTimeout(timer)
     }
   }, [code, lesson, track, day, saveCodeForLesson])
+
+  useEffect(() => {
+    if (lesson) {
+      const timer = setTimeout(() => {
+        savePersonalNote(track, day, personalNote)
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [personalNote, lesson, track, day, savePersonalNote])
 
   const handleRunCode = async () => {
     setIsRunning(true)
@@ -222,6 +235,81 @@ const LessonWorkspace = ({ track }) => {
                 </button>
               )}
             </div>
+          </div>
+
+          {/* Notes Section */}
+          <div className="lesson-section notes-section">
+            <div className="notes-tabs">
+              <button 
+                className={`notes-tab ${activeNotesTab === 'lesson' ? 'active' : ''}`}
+                onClick={() => setActiveNotesTab('lesson')}
+              >
+                <BookOpen size={16} />
+                Lesson Notes
+              </button>
+              <button 
+                className={`notes-tab ${activeNotesTab === 'personal' ? 'active' : ''}`}
+                onClick={() => setActiveNotesTab('personal')}
+              >
+                <FileText size={16} />
+                My Notes
+              </button>
+            </div>
+
+            {activeNotesTab === 'lesson' && lesson.notes && (
+              <div className="lesson-notes">
+                <div className="note-item">
+                  <h4>💡 Key Concept</h4>
+                  <p>{lesson.notes.concept}</p>
+                </div>
+                
+                {lesson.notes.keyPoints && lesson.notes.keyPoints.length > 0 && (
+                  <div className="note-item">
+                    <h4>📝 Key Points</h4>
+                    <ul>
+                      {lesson.notes.keyPoints.map((point, idx) => (
+                        <li key={idx}>{point}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {lesson.notes.tips && lesson.notes.tips.length > 0 && (
+                  <div className="note-item">
+                    <h4>💭 Tips</h4>
+                    <ul>
+                      {lesson.notes.tips.map((tip, idx) => (
+                        <li key={idx}>{tip}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {lesson.notes.example && (
+                  <div className="note-item">
+                    <h4>🔍 Example</h4>
+                    <pre><code>{lesson.notes.example}</code></pre>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeNotesTab === 'lesson' && !lesson.notes && (
+              <div className="lesson-notes">
+                <p className="no-notes">No lesson notes available for this day yet.</p>
+              </div>
+            )}
+
+            {activeNotesTab === 'personal' && (
+              <div className="personal-notes">
+                <textarea
+                  value={personalNote}
+                  onChange={(e) => setPersonalNote(e.target.value)}
+                  placeholder="Write your personal notes here... They will be automatically saved."
+                  className="notes-textarea"
+                />
+              </div>
+            )}
           </div>
 
           {mode === 'break' && lesson.commonErrors && (
