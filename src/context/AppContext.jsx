@@ -1,189 +1,98 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react'
 
-const AppContext = createContext();
+const AppContext = createContext()
 
 export const useApp = () => {
-  const context = useContext(AppContext);
+  const context = useContext(AppContext)
   if (!context) {
-    throw new Error('useApp must be used within AppProvider');
+    throw new Error('useApp must be used within AppProvider')
   }
-  return context;
-};
+  return context
+}
 
 export const AppProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'light';
-  });
-
-  const [progress, setProgress] = useState(() => {
-    const saved = localStorage.getItem('progress');
+  const [userProgress, setUserProgress] = useState(() => {
+    const saved = localStorage.getItem('userProgress')
     return saved ? JSON.parse(saved) : {
-      python: {},
-      react: {},
-      javascript: {}
-    };
-  });
-
-  const [quizScores, setQuizScores] = useState(() => {
-    const saved = localStorage.getItem('quizScores');
-    return saved ? JSON.parse(saved) : {
-      python: [],
-      react: [],
-      javascript: []
-    };
-  });
-
-  const [bookmarks, setBookmarks] = useState(() => {
-    const saved = localStorage.getItem('bookmarks');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [projectProgress, setProjectProgress] = useState(() => {
-    const saved = localStorage.getItem('projectProgress');
-    return saved ? JSON.parse(saved) : {};
-  });
-
-  const [timeSpent, setTimeSpent] = useState(() => {
-    const saved = localStorage.getItem('timeSpent');
-    return saved ? JSON.parse(saved) : {
-      python: 0,
-      react: 0,
-      javascript: 0
-    };
-  });
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
-  useEffect(() => {
-    localStorage.setItem('progress', JSON.stringify(progress));
-  }, [progress]);
-
-  useEffect(() => {
-    localStorage.setItem('quizScores', JSON.stringify(quizScores));
-  }, [quizScores]);
-
-  useEffect(() => {
-    localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
-  }, [bookmarks]);
-
-  useEffect(() => {
-    localStorage.setItem('projectProgress', JSON.stringify(projectProgress));
-  }, [projectProgress]);
-
-  useEffect(() => {
-    localStorage.setItem('timeSpent', JSON.stringify(timeSpent));
-  }, [timeSpent]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
-
-  const markLessonComplete = (technology, day) => {
-    setProgress(prev => ({
-      ...prev,
-      [technology]: {
-        ...prev[technology],
-        [day]: {
-          status: 'completed',
-          completedAt: new Date().toISOString()
-        }
-      }
-    }));
-  };
-
-  const markLessonInProgress = (technology, day) => {
-    setProgress(prev => ({
-      ...prev,
-      [technology]: {
-        ...prev[technology],
-        [day]: {
-          status: 'in-progress',
-          startedAt: new Date().toISOString()
-        }
-      }
-    }));
-  };
-
-  const addQuizScore = (technology, score) => {
-    setQuizScores(prev => ({
-      ...prev,
-      [technology]: [...prev[technology], {
-        score,
-        date: new Date().toISOString()
-      }]
-    }));
-  };
-
-  const toggleBookmark = (lessonId) => {
-    setBookmarks(prev => {
-      if (prev.includes(lessonId)) {
-        return prev.filter(id => id !== lessonId);
-      }
-      return [...prev, lessonId];
-    });
-  };
-
-  const addTimeSpent = (technology, minutes) => {
-    setTimeSpent(prev => ({
-      ...prev,
-      [technology]: prev[technology] + minutes
-    }));
-  };
-
-  const getStreak = () => {
-    const allProgress = Object.values(progress).flatMap(tech => 
-      Object.values(tech).map(lesson => lesson.completedAt)
-    ).filter(Boolean).sort().reverse();
-
-    let streak = 0;
-    let currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-
-    for (let date of allProgress) {
-      const lessonDate = new Date(date);
-      lessonDate.setHours(0, 0, 0, 0);
-      
-      const diffDays = Math.floor((currentDate - lessonDate) / (1000 * 60 * 60 * 24));
-      
-      if (diffDays === streak) {
-        streak++;
-      } else if (diffDays > streak) {
-        break;
-      }
+      python: { completed: [], current: 1, totalLessons: 30 },
+      javascript: { completed: [], current: 1, totalLessons: 30 },
+      react: { completed: [], current: 1, totalLessons: 30 },
+      projects: [],
+      errors: [],
+      quizzes: [],
+      streak: 0,
+      lastActive: null
     }
+  })
 
-    return streak;
-  };
+  const [skillMastery, setSkillMastery] = useState(() => {
+    const saved = localStorage.getItem('skillMastery')
+    return saved ? JSON.parse(saved) : {
+      python: { fundamentals: 0, core: 0, advanced: 0, production: 0 },
+      javascript: { fundamentals: 0, core: 0, advanced: 0, production: 0 },
+      react: { fundamentals: 0, core: 0, advanced: 0, production: 0 }
+    }
+  })
 
-  const markProjectComplete = (projectId) => {
-    setProjectProgress(prev => ({
+  useEffect(() => {
+    localStorage.setItem('userProgress', JSON.stringify(userProgress))
+  }, [userProgress])
+
+  useEffect(() => {
+    localStorage.setItem('skillMastery', JSON.stringify(skillMastery))
+  }, [skillMastery])
+
+  const completeLesson = (track, day) => {
+    setUserProgress(prev => ({
       ...prev,
-      [projectId]: {
-        completed: true,
-        completedAt: new Date().toISOString()
+      [track]: {
+        ...prev[track],
+        completed: [...new Set([...prev[track].completed, day])],
+        current: Math.max(prev[track].current, day + 1)
       }
-    }));
-  };
+    }))
+  }
+
+  const completeProject = (projectId) => {
+    setUserProgress(prev => ({
+      ...prev,
+      projects: [...new Set([...prev.projects, projectId])]
+    }))
+  }
+
+  const solveError = (errorId) => {
+    setUserProgress(prev => ({
+      ...prev,
+      errors: [...new Set([...prev.errors, errorId])]
+    }))
+  }
+
+  const submitQuiz = (quizId, score) => {
+    setUserProgress(prev => ({
+      ...prev,
+      quizzes: [...prev.quizzes, { id: quizId, score, date: new Date().toISOString() }]
+    }))
+  }
+
+  const updateSkillMastery = (track, category, value) => {
+    setSkillMastery(prev => ({
+      ...prev,
+      [track]: {
+        ...prev[track],
+        [category]: Math.min(100, Math.max(0, value))
+      }
+    }))
+  }
 
   const value = {
-    theme,
-    toggleTheme,
-    progress,
-    markLessonComplete,
-    markLessonInProgress,
-    quizScores,
-    addQuizScore,
-    bookmarks,
-    toggleBookmark,
-    timeSpent,
-    addTimeSpent,
-    getStreak,
-    projectProgress,
-    markProjectComplete
-  };
+    userProgress,
+    skillMastery,
+    completeLesson,
+    completeProject,
+    solveError,
+    submitQuiz,
+    updateSkillMastery
+  }
 
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
-};
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>
+}
