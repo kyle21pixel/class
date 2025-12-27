@@ -5,19 +5,21 @@ import { getPythonLessonByDay } from '../data/pythonLessons'
 import { getJavaScriptLessonByDay } from '../data/javascriptLessons'
 import { getReactLessonByDay } from '../data/reactLessons'
 import CodeEditor from '../components/CodeEditor'
-import { CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Lightbulb, Bug } from 'lucide-react'
+import { CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, Lightbulb, Bug, Eye, EyeOff, Play } from 'lucide-react'
 import './LessonWorkspace.css'
 
 const LessonWorkspace = ({ track }) => {
   const { day } = useParams()
   const navigate = useNavigate()
-  const { completeLesson } = useApp()
+  const { completeLesson, saveCodeForLesson, getSavedCode } = useApp()
   
   const [lesson, setLesson] = useState(null)
   const [code, setCode] = useState('')
   const [output, setOutput] = useState('')
   const [mode, setMode] = useState('learn') // 'learn', 'practice', 'break'
   const [showHints, setShowHints] = useState(false)
+  const [showSolution, setShowSolution] = useState(false)
+  const [isRunning, setIsRunning] = useState(false)
 
   useEffect(() => {
     let lessonData
@@ -37,17 +39,71 @@ const LessonWorkspace = ({ track }) => {
     
     if (lessonData) {
       setLesson(lessonData)
-      setCode(lessonData.starterCode || '')
+      const savedCode = getSavedCode(track, day)
+      setCode(savedCode || lessonData.starterCode || '')
     }
-  }, [track, day])
+  }, [track, day, getSavedCode])
+
+  useEffect(() => {
+    if (lesson && code) {
+      const timer = setTimeout(() => {
+        saveCodeForLesson(track, day, code)
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [code, lesson, track, day, saveCodeForLesson])
 
   const handleRunCode = async () => {
-    setOutput('Running code...')
+    setIsRunning(true)
+    setOutput('Running code...\n')
     
-    // Simulate code execution
-    setTimeout(() => {
-      setOutput('Code executed successfully!\n\nOutput:\n> Success')
-    }, 1000)
+    try {
+      const language = getLanguage()
+      
+      // Simulate code execution with error detection
+      await new Promise(resolve => setTimeout(resolve, 800))
+      
+      if (language === 'python') {
+        // Simple Python execution simulation
+        if (code.includes('print(')) {
+          const matches = code.match(/print\((.*?)\)/g)
+          if (matches) {
+            const outputs = matches.map(match => {
+              const content = match.replace(/print\(|\)/g, '').trim()
+              try {
+                return eval(content)
+              } catch {
+                return content.replace(/['"]/g, '')
+              }
+            })
+            setOutput(`✓ Code executed successfully!\n\nOutput:\n${outputs.join('\n')}`)
+          }
+        } else {
+          setOutput('✓ Code executed successfully!\n\nNo output to display.')
+        }
+      } else if (language === 'javascript' || language === 'jsx') {
+        // JavaScript/React execution simulation
+        const logs = []
+        const customConsole = {
+          log: (...args) => logs.push(args.join(' ')),
+          error: (...args) => logs.push('ERROR: ' + args.join(' ')),
+          warn: (...args) => logs.push('WARNING: ' + args.join(' '))
+        }
+        
+        try {
+          // Simple safe evaluation for demo
+          const func = new Function('console', code)
+          func(customConsole)
+          setOutput(`✓ Code executed successfully!\n\n${logs.length > 0 ? 'Output:\n' + logs.join('\n') : 'No output to display.'}`)
+        } catch (error) {
+          setOutput(`✗ Error:\n${error.message}\n\nCheck your code for syntax errors.`)
+        }
+      }
+    } catch (error) {
+      setOutput(`✗ Execution error:\n${error.message}`)
+    } finally {
+      setIsRunning(false)
+    }
   }
 
   const handleBreakCode = () => {
@@ -55,6 +111,22 @@ const LessonWorkspace = ({ track }) => {
       setCode(lesson.breakCode)
       setMode('break')
       setOutput('⚠️ Intentional errors injected! Try to debug and fix them.')
+    }
+  }
+
+  const handleShowSolution = () => {
+    if (!showSolution && lesson && lesson.correctCode) {
+      setShowSolution(true)
+    } else {
+      setShowSolution(false)
+    }
+  }
+
+  const handleUseSolution = () => {
+    if (lesson && lesson.correctCode) {
+      setCode(lesson.correctCode)
+      setShowSolution(false)
+      setOutput('✓ Solution code loaded! Study it and understand how it works.')
     }
   }
 
@@ -140,6 +212,15 @@ const LessonWorkspace = ({ track }) => {
                 <Lightbulb size={16} />
                 {showHints ? 'Hide' : 'Show'} Hints
               </button>
+              {lesson.correctCode && (
+                <button 
+                  onClick={handleShowSolution}
+                  className="action-btn success"
+                >
+                  {showSolution ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showSolution ? 'Hide' : 'Show'} Solution
+                </button>
+              )}
             </div>
           </div>
 
@@ -195,16 +276,39 @@ const LessonWorkspace = ({ track }) => {
                 {lesson.title}.{getLanguage() === 'jsx' ? 'jsx' : getLanguage()}
               </div>
             </div>
-            <button onClick={handleRunCode} className="run-btn">
-              ▶ Run Code
+            <button onClick={handleRunCode} className="run-btn" disabled={isRunning}>
+              <Play size={16} />
+              {isRunning ? 'Running...' : 'Run Code'}
             </button>
           </div>
 
-          <CodeEditor
-            value={code}
-            onChange={setCode}
-            language={getLanguage()}
-          />
+          {showSolution ? (
+            <div className="solution-view">
+              <div className="solution-header">
+                <h3>💡 Solution Code</h3>
+                <div className="solution-actions">
+                  <button onClick={handleUseSolution} className="use-solution-btn">
+                    Use This Code
+                  </button>
+                  <button onClick={() => setShowSolution(false)} className="close-solution-btn">
+                    Close
+                  </button>
+                </div>
+              </div>
+              <CodeEditor
+                value={lesson.correctCode || ''}
+                onChange={() => {}}
+                language={getLanguage()}
+                readOnly={true}
+              />
+            </div>
+          ) : (
+            <CodeEditor
+              value={code}
+              onChange={setCode}
+              language={getLanguage()}
+            />
+          )}
 
           <div className="output-panel">
             <div className="output-header">

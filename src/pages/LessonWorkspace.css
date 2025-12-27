@@ -172,6 +172,15 @@
   background: rgba(218, 54, 51, 0.1);
 }
 
+.action-btn.success {
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.action-btn.success:hover {
+  background: rgba(35, 134, 54, 0.1);
+}
+
 .error-section,
 .hints-section {
   border-color: var(--warning);
@@ -269,9 +278,73 @@
   transition: all 0.2s ease;
 }
 
-.run-btn:hover {
+.run-btn:hover:not(:disabled) {
   background: #4a89dc;
   transform: translateY(-1px);
+}
+
+.run-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.solution-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--success);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.solution-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(35, 134, 54, 0.1);
+  border-bottom: 1px solid var(--success);
+}
+
+.solution-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--success);
+  margin: 0;
+}
+
+.solution-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.use-solution-btn,
+.close-solution-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.use-solution-btn {
+  background: var(--success);
+  color: white;
+}
+
+.use-solution-btn:hover {
+  background: #1e6f34;
+}
+
+.close-solution-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+.close-solution-btn:hover {
+  background: var(--bg-hover);
 }
 
 .output-panel {

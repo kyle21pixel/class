@@ -1,11 +1,15 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { pythonLessons } from '../data/pythonLessons'
-import { CheckCircle, Circle, Clock, TrendingUp } from 'lucide-react'
+import { CheckCircle, Circle, Clock, TrendingUp, Search, Filter } from 'lucide-react'
 import './Track.css'
 
 const PythonTrack = () => {
   const { userProgress } = useApp()
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all')
+  const [selectedCategory, setSelectedCategory] = useState('all')
 
   const categories = [
     { name: 'Fundamentals', key: 'fundamentals', description: 'Days 1-7: Python basics and syntax' },
@@ -24,6 +28,19 @@ const PythonTrack = () => {
   }
 
   const isCompleted = (day) => userProgress.python.completed.includes(day)
+
+  const filterLessons = (lessons) => {
+    return lessons.filter(lesson => {
+      const matchesSearch = lesson.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           lesson.topics.some(topic => topic.toLowerCase().includes(searchQuery.toLowerCase()))
+      const matchesDifficulty = selectedDifficulty === 'all' || lesson.difficulty === selectedDifficulty
+      return matchesSearch && matchesDifficulty
+    })
+  }
+
+  const filteredCategories = selectedCategory === 'all' 
+    ? categories 
+    : categories.filter(cat => cat.key === selectedCategory)
 
   return (
     <div className="track-page">
@@ -44,8 +61,40 @@ const PythonTrack = () => {
         </div>
       </header>
 
-      {categories.map((category) => {
+      <div className="track-filters">
+        <div className="search-box">
+          <Search size={18} />
+          <input
+            type="text"
+            placeholder="Search lessons..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="filter-group">
+          <Filter size={18} />
+          <select value={selectedDifficulty} onChange={(e) => setSelectedDifficulty(e.target.value)}>
+            <option value="all">All Difficulties</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+          <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+            <option value="all">All Categories</option>
+            <option value="fundamentals">Fundamentals</option>
+            <option value="core">Core</option>
+            <option value="advanced">Advanced</option>
+            <option value="production">Production</option>
+          </select>
+        </div>
+      </div>
+
+      {filteredCategories.map((category) => {
         const lessons = pythonLessons.filter(l => l.category === category.key)
+        const filteredLessons = filterLessons(lessons)
+        
+        if (filteredLessons.length === 0) return null
+        
         const completedCount = lessons.filter(l => isCompleted(l.day)).length
 
         return (
@@ -61,7 +110,7 @@ const PythonTrack = () => {
             </div>
 
             <div className="lessons-grid">
-              {lessons.map((lesson) => {
+              {filteredLessons.map((lesson) => {
                 const completed = isCompleted(lesson.day)
                 const isLocked = lesson.day > 1 && !isCompleted(lesson.day - 1)
 

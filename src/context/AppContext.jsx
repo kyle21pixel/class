@@ -34,6 +34,16 @@ export const AppProvider = ({ children }) => {
     }
   })
 
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('theme')
+    return saved || 'dark'
+  })
+
+  const [savedCode, setSavedCode] = useState(() => {
+    const saved = localStorage.getItem('savedCode')
+    return saved ? JSON.parse(saved) : {}
+  })
+
   useEffect(() => {
     localStorage.setItem('userProgress', JSON.stringify(userProgress))
   }, [userProgress])
@@ -41,6 +51,30 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('skillMastery', JSON.stringify(skillMastery))
   }, [skillMastery])
+
+  useEffect(() => {
+    localStorage.setItem('theme', theme)
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
+  useEffect(() => {
+    localStorage.setItem('savedCode', JSON.stringify(savedCode))
+  }, [savedCode])
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark')
+  }
+
+  const saveCodeForLesson = (track, day, code) => {
+    setSavedCode(prev => ({
+      ...prev,
+      [`${track}-${day}`]: code
+    }))
+  }
+
+  const getSavedCode = (track, day) => {
+    return savedCode[`${track}-${day}`] || null
+  }
 
   const completeLesson = (track, day) => {
     setUserProgress(prev => ({
@@ -87,11 +121,15 @@ export const AppProvider = ({ children }) => {
   const value = {
     userProgress,
     skillMastery,
+    theme,
+    toggleTheme,
     completeLesson,
     completeProject,
     solveError,
     submitQuiz,
-    updateSkillMastery
+    updateSkillMastery,
+    saveCodeForLesson,
+    getSavedCode
   }
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>
